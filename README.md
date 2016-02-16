@@ -1,6 +1,6 @@
 # Repo for project 2.c. When can social media lead financial markets?
 
-Project structure
+## Project structure
 
 ```
 /project
@@ -17,3 +17,10 @@ Project structure
       ... (other notebooks)
     ... (test notebooks)
 ```
+
+## Documentation
+
+## Miscellaneous
+
+Use `%matplotlib inline` to include and store plots within the notebook file.
+
