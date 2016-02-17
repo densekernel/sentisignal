@@ -50,6 +50,9 @@ def subsample_data(filename_data, filename_symbology, dir_pickle, start_date, en
     # return dataframe
     return data
 
+#preprocess sentiment data with additional columns for:
+# log_bullishness, log_bull_bear_ratio, TISf?, RTISf?, 
+# difference in total scanned message, difference in (sum(bullish + bearish msgs))
 def preprocess_data_sentiment(df):
     # log bullishness
     df['LOG_BULLISHNESS'] = np.log(1 + df['BULL_SCORED_MESSAGES']) - np.log(1 + df['BEAR_SCORED_MESSAGES'])
@@ -59,6 +62,12 @@ def preprocess_data_sentiment(df):
     df['TISf'] = (1+df['BULL_SCORED_MESSAGES'])/(1+ df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES'])
     # RTISf
     df['RTISf'] = ((1+df['BULL_SCORED_MESSAGES'])/(1+ df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES'])).pct_change()
+    # diff in total scanned messages
+    df['TOTAL_SCANNED_MESSAGES_DIFF'] = df['TOTAL_SCANNED_MESSAGES'].diff()
+    # diff in total scanned messages
+    df['TOTAL_SENTIMENT_MESSAGES_DIFF'] = (df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES']).diff()
+
+
     # return df
 
 def preprocess_data_finance(df):
@@ -67,14 +76,16 @@ def preprocess_data_finance(df):
     df['LOG_RETURN'] = np.log(1 + df['CHANGE'])
     # volatitility
     df['VOLATILITY'] = df['HIGH'] - df['LOW']
-#     print df.info()
+    # difference in volume
+    df['VOLUME_DIFF'] = df['VOLUME'].diff()
     # return df
 
 # function to return historical finance data
 # takes a list of ticker symbols
-    # if sum_data_frame is true -> create a summed value to form an indic
-    # else create a concatenated dataframe
-def get_data_finance(source, symbols, start_date, end_date, dir_pickle, sum_data_frame):
+# if sum_data_frame is true -> create a summed value to form an indic
+# else create a concatenated dataframe
+#
+def get_data_finance(source, symbols, start_date, end_date, dir_pickle, sum_data_frame, sum_symbol):
     symbols_filename = '-'.join(symbols[:3])
     pickle_name = dir_pickle+'pickle_finance_'+start_date+'_'+end_date+'_'+symbols_filename+'.p'
     try: 
@@ -88,8 +99,11 @@ def get_data_finance(source, symbols, start_date, end_date, dir_pickle, sum_data
             data_finance = data.DataReader(symbols[0], source, start_date, end_date)
             # convert headers to uppercase for ease of use
             data_finance.columns = [x.upper() for x in data_finance.columns]
-            data_finance['SYMBOL'] = symbols[0]
-            preprocess_data_finance(data_finance)
+            # preprocess_data_finance(data_finance)
+            if sum_data_frame:
+                data_finance['SYMBOL'] = sum_symbol
+            else:
+                data_finance['SYMBOL'] = symbols[0]
         #         print(data_finance.head())
         except: 
             print("Unable to retrieve data for: " + symbols[0])
@@ -102,13 +116,13 @@ def get_data_finance(source, symbols, start_date, end_date, dir_pickle, sum_data
                 symbol_finance = data.DataReader(symbol, source, start_date, end_date)
                 # convert headers to uppercase for ease of use
                 symbol_finance.columns = [x.upper() for x in symbol_finance.columns]
-                preprocess_data_finance(symbol_finance)
+                # preprocess_data_finance(symbol_finance)
                 # reset index (optional)
                 # symbol_finance.reset_index(level=0, inplace=True)
                 # sum dataframes
                 if sum_data_frame:
+                    symbol_finance['SYMBOL'] = sum_symbol
                     data_finance = data_finance + symbol_finance
-                    print("if")
                 # vertically concat dataframes
                 else:
                     symbol_finance['SYMBOL'] = symbol
@@ -140,6 +154,15 @@ def merge_sentiment_finance(data_sentiment, data_finance, with_symbol, fill_fina
         if fill_sentiment:
             return pd.merge(data_sentiment, data_finance, on=['DATE'], how='right')
 
+
+def apply_rolling_window(df, width):
+    df = df.ix[1:, :]
+    df_num = df.select_dtypes(include=[np.float, np.int])
+    df_non_num = df.select_dtypes(exclude=[np.float, np.int])
+    df_num_window = pd.rolling_mean(df_num, width, min_periods=1)
+    df_window = pd.concat([df_non_num, df_num_window], axis=1)
+    return df_window
+
 def correlation_analysis(df):
     i = 0
     resCorr = pd.DataFrame(index = ['BULLISH_INTENSITY','BEARISH_INTENSITY','BULL_MINUS_BEAR','BULL_SCORED_MESSAGES',
@@ -167,14 +190,4 @@ def information_surplus(df, time_shift, varx, vary, bins):
         output.append({'SHIFT': i, 'MUTUAL INFORMATION': mi, 'INFORMATION_SURPLUS_DIFF': mi - mi_origin, 'INFORMATION_SURPLUS_PCT': (mi - mi_origin) / mi_origin * 100})
     output_frame = pd.DataFrame(output)
     return output_frame
-
-
-# calc_mutual_information(df.ix[1:,'LOG_RETURN'], df.ix[1:,'LOG_BULL_BEAR_RATIO'], 500)
-# calc_mutual_information(, df.ix[1:,'LOG_RETURN'], 500)
-
-
-
-# shift1_ = googleV.Return.shift(1)
-# shifted_ = calc_MIa(googleV.ix[2:,3],shift1[2:],100)
-
                    
