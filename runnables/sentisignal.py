@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 from sklearn import metrics
+from sklearn.cluster import KMeans
+# from sklearn.datasets import load_digits
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import scale
+
 from datetime import datetime
 from yahoo_finance import Share
 from pandas_datareader import data, wb
