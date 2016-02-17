@@ -59,6 +59,7 @@ def preprocess_data_sentiment(df):
     df['TISf'] = (1+df['BULL_SCORED_MESSAGES'])/(1+ df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES'])
     # RTISf
     df['RTISf'] = ((1+df['BULL_SCORED_MESSAGES'])/(1+ df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES'])).pct_change()
+    # return df
 
 def preprocess_data_finance(df):
     # log return
@@ -67,7 +68,7 @@ def preprocess_data_finance(df):
     # volatitility
     df['VOLATILITY'] = df['HIGH'] - df['LOW']
 #     print df.info()
-    return df
+    # return df
 
 # function to return historical finance data
 # takes a list of ticker symbols
