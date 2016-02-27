@@ -4,16 +4,18 @@ import pylab as P
 import ast
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import math
+import scipy.stats as s
+import statsmodels.api as sm
 
 from sklearn import metrics
 from sklearn.cluster import KMeans
-# from sklearn.datasets import load_digits
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import scale
-
 from datetime import datetime
 from yahoo_finance import Share
 from pandas_datareader import data, wb
+from statsmodels.graphics.api import qqplot
 
 plt.style.use('ggplot')
 
@@ -54,36 +56,6 @@ def subsample_data(filename_data, filename_symbology, dir_pickle, start_date, en
         data.to_pickle(pickle_name)
     # return dataframe
     return data
-
-#preprocess sentiment data with additional columns for:
-# log_bullishness, log_bull_bear_ratio, TISf?, RTISf?, 
-# difference in total scanned message, difference in (sum(bullish + bearish msgs))
-def preprocess_data_sentiment(df):
-    # log bullishness
-    df['LOG_BULLISHNESS'] = np.log(1 + df['BULL_SCORED_MESSAGES']) - np.log(1 + df['BEAR_SCORED_MESSAGES'])
-    # log bull bear ratio
-    df['LOG_BULL_BEAR_RATIO'] = np.log(df['BULL_SCORED_MESSAGES']) / np.log(df['BEAR_SCORED_MESSAGES'])
-    # TISf
-    df['TISf'] = (1+df['BULL_SCORED_MESSAGES'])/(1+ df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES'])
-    # RTISf
-    df['RTISf'] = ((1+df['BULL_SCORED_MESSAGES'])/(1+ df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES'])).pct_change()
-    # diff in total scanned messages
-    df['TOTAL_SCANNED_MESSAGES_DIFF'] = df['TOTAL_SCANNED_MESSAGES'].diff()
-    # diff in total scanned messages
-    df['TOTAL_SENTIMENT_MESSAGES_DIFF'] = (df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES']).diff()
-
-
-    # return df
-
-def preprocess_data_finance(df):
-    # log return
-    df['CHANGE'] = df['ADJ CLOSE'].pct_change()
-    df['LOG_RETURN'] = np.log(1 + df['CHANGE'])
-    # volatitility
-    df['VOLATILITY'] = df['HIGH'] - df['LOW']
-    # difference in volume
-    df['VOLUME_DIFF'] = df['VOLUME'].diff()
-    # return df
 
 # function to return historical finance data
 # takes a list of ticker symbols
@@ -146,20 +118,111 @@ def get_data_finance(source, symbols, start_date, end_date, dir_pickle, sum_data
     # return as dataframe
     return data_finance
 
+#preprocess sentiment data with additional columns for:
+# log_bullishness, log_bull_bear_ratio, TISf?, RTISf?, 
+# difference in total scanned message, difference in (sum(bullish + bearish msgs))
+def preprocess_data_sentiment(df):
+    # log bull messages
+    df['LOG_BULL_RETURN'] = np.log(1+df['BULL_SCORED_MESSAGES']).diff()
+    # log bear messages
+    df['LOG_BEAR_RETURN'] = np.log(1+df['BEAR_SCORED_MESSAGES']).diff()
+    # log bullishness
+    df['LOG_BULLISHNESS'] = np.log(1 + df['BULL_SCORED_MESSAGES']) - np.log(1 + df['BEAR_SCORED_MESSAGES'])
+    # log bull bear ratio
+    df['LOG_BULL_BEAR_RATIO'] = np.log(df['BULL_SCORED_MESSAGES']) / np.log(df['BEAR_SCORED_MESSAGES'])
+    # TISf
+    df['TISf'] = (1+df['BULL_SCORED_MESSAGES'])/(1+ df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES'])
+    # RTISf
+    df['RTISf'] = ((1+df['BULL_SCORED_MESSAGES'])/(1+ df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES'])).pct_change()
+    # diff in total scanned messages
+    df['TOTAL_SCANNED_MESSAGES_DIFF'] = df['TOTAL_SCANNED_MESSAGES'].diff()
+    # diff in total scanned messages
+    df['TOTAL_SENTIMENT_MESSAGES_DIFF'] = (df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES']).diff()
+
+#preprocess finance data with additional columns for:
+# log_return, volatility, log_volume_diff
+def preprocess_data_finance(df):
+    # log return
+    df['LOG_RETURN'] = np.log(1 + df['ADJ CLOSE'].pct_change())
+    # volatitility
+    df['VOLATILITY'] = df['HIGH'] - df['LOW']
+    # difference in volume
+    df['LOG_VOLUME_DIFF'] = np.log(df['VOLUME'].diff())
+    # return df
+
+# merge sentiment and finance data
+# usually called with F, F, T
 def merge_sentiment_finance(data_sentiment, data_finance, with_symbol, fill_finance, fill_sentiment):
     if with_symbol:
 #         return pd.merge(data_sentiment, data_finance, on=['DATE', 'SYMBOL'], how='left')
         if fill_finance:
             return pd.merge(data_sentiment, data_finance, on=['DATE', 'SYMBOL'], how='left')
         if fill_sentiment:
-            return pd.merge(data_sentiment, data_finance, on=['DATE', 'SYMBOL'], how='left')
+            return pd.merge(data_sentiment, data_finance, on=['DATE', 'SYMBOL'], how='right')
     else:
         if fill_finance:
             return pd.merge(data_sentiment, data_finance, on=['DATE'], how='left')
         if fill_sentiment:
             return pd.merge(data_sentiment, data_finance, on=['DATE'], how='right')
 
+# descriptive statistics
+# provide a range of graphics for descriptive statistics
+def check_pdf(df):
+    df_num = df.select_dtypes(include=[np.float, np.int])
+    for index in df_num.columns:
+        try:
+            if index in ['LOG_BULL_RETURN', 'LOG_BEAR_RETURN','RTISf', 'TOTAL_SCANNED_MESSAGES_DIFF', 'TOTAL_SENTIMENT_MESSAGES_DIFF']:
 
+                h = df_num[index][1:].sort_values().values
+                fit = s.norm.pdf(h, np.mean(h), np.std(h))  #this is a fitting indeed
+                
+                P.plot(h,fit,'-o')
+                P.hist(h,normed=True)      #use this to draw histogram of your data
+                P.title(index)
+                P.show()        
+
+                # fig = sm.graphics.tsa.plot_acf(df_num[index][1:],lags=40)
+                # plt.title(index)
+            elif index in ['LOG_BULL_BEAR_RATIO']:
+        
+                h = df_num[index][1:].sort_values().values
+                fit = s.norm.pdf(h, np.mean(h), np.std(h))  #this is a fitting indeed
+                
+                P.plot(h,fit,'-o')
+                P.hist(h,normed=True)      #use this to draw histogram of your data
+                P.title(index)
+                P.show() 
+
+            else: 
+                
+                h = df_num[index][1:].sort_values().values
+                fit = s.norm.pdf(h, np.mean(h), np.std(h))  #this is a fitting indeed
+                
+                P.plot(h,fit,'-o')
+                P.hist(h,normed=True)      #use this to draw histogram of your data
+                P.title(index)
+                P.show()
+        except:
+            print "error" 
+
+# check autocorrelation
+# provide a range of graphics which diagramatically show spikes for autocorrelation 
+def check_acf(df):
+    df_num = df.select_dtypes(include=[np.float, np.int])
+    for index in df_num.columns:
+        plt.figure(figsize=(8,10))
+        if index in ['LOG_BULL_RETURN', 'LOG_BEAR_RETURN','RTISf', 'TOTAL_SCANNED_MESSAGES_DIFF', 'TOTAL_SENTIMENT_MESSAGES_DIFF']:
+            fig = sm.graphics.tsa.plot_acf(df_num[index][1:],lags=40)
+            plt.title(index)
+        elif index in ['LOG_BULL_BEAR_RATIO']:
+            fig = sm.graphics.tsa.plot_acf(df_num[index][2:],lags=40)
+            plt.title(index)
+        else: 
+            fig = sm.graphics.tsa.plot_acf(df_num[index],lags=40)
+            plt.title(index)
+    return fig
+
+# apply rollling window to data
 def apply_rolling_window(df, width):
     df = df.ix[1:, :]
     df_num = df.select_dtypes(include=[np.float, np.int])
@@ -171,12 +234,29 @@ def apply_rolling_window(df, width):
 def correlation_analysis(df):
     i = 0
     resCorr = pd.DataFrame(index = ['BULLISH_INTENSITY','BEARISH_INTENSITY','BULL_MINUS_BEAR','BULL_SCORED_MESSAGES',
-       'BEAR_SCORED_MESSAGES','LOG_BULLISHNESS','TISf','RTISf'] ,columns = ['LOG_RETURN','VOLUME'])
+       'BEAR_SCORED_MESSAGES','LOG_BULLISHNESS','TISf','RTISf'] ,columns = ['LOG_RETURN','VOLUME','VOLATILITY'])
     for column in resCorr.index:
         resCorr.ix[i,0] = df['LOG_RETURN'].corr(df[column])
         resCorr.ix[i,1] = df['VOLUME'].corr(df[column])
+        resCorr.ix[i,2] = df['VOLATILITY'].corr(df[column])
         i += 1
     return resCorr
+
+# Sturges formula: k = log_2 n + 1  
+def sturges_bin(df):
+    n = df.count()[1]
+    return math.ceil(np.log2(n)+1)
+# Rice Rule k = 2 n^{1/3}
+def rice_bin(df):
+    n = df.count()[1]
+    return math.ceil(2*n**(1/3)) 
+# Doanes formula for non-normal data.
+def doane_bin(data):
+    n = data.count()
+    std = np.std(data)
+    g = abs(s.moment(n,3)/(std**3))
+    u = math.sqrt(6*(n-1)/((n+1)*(n+3)))
+    return round(1 + np.log2(n) + np.log2(1+g/u))
 
 def calc_mutual_information(x, y, bins):
     c_xy = np.histogram2d(x, y, bins)[0]
