@@ -342,7 +342,7 @@ def kmeans(df, features):
     data = mat
 
     reduced_data = PCA(n_components=2).fit_transform(data)
-    kmeans = KMeans(init='k-means++', n_clusters=6, n_init=10)
+    kmeans = KMeans(init='k-means++', n_clusters=4, n_init=10)
     kmeans.fit(reduced_data)
 
     # Step size of the mesh. Decrease to increase the quality of the VQ.
@@ -389,7 +389,7 @@ def plot_info_surplus(results, legend):
         plt.plot(res['SHIFT'], res['INFORMATION_SURPLUS_PCT'])
         ymax = max(res['INFORMATION_SURPLUS_PCT'].max(), ymax)
 
-    axes.set_ylim([0,ymax])
+    axes.set_ylim([0.0,ymax])
     plt.legend(legend, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     plt.xlabel('Time-shift of sentiment data (days) with financial data')
     plt.ylabel('Information Surplus %')
