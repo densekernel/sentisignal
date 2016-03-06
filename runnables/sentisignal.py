@@ -72,7 +72,7 @@ def get_data_finance(source, symbols, start_date, end_date, dir_pickle, sum_data
         data_finance = pd.read_pickle(pickle_name)
         print("Loaded from pre-created pickle")
     except:
-        print("Scraping and saving data from Yahoo")
+        print("Scraping and saving data from "+source)
         # get finance data using pandas data reader
         # create df from first symbol
         try:
@@ -379,6 +379,19 @@ def kmeans(df, features):
     plt.show()
 
 # graphical library function
+
+def plot_corr(df,size=10):
+    '''Function plots a graphical correlation matrix for each pair of columns in the dataframe.
+
+    Input:
+        df: pandas DataFrame
+        size: vertical and horizontal size of the plot'''
+
+    corr = df.corr()
+    fig, ax = plt.subplots(figsize=(size, size))
+    ax.matshow(corr)
+    plt.xticks(range(len(corr.columns)), corr.columns);
+    plt.yticks(range(len(corr.columns)), corr.columns);
 
 def plot_info_surplus(results, legend):
 
