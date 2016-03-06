@@ -29,7 +29,7 @@ plt.style.use('ggplot')
 #'EXCHANGE' - list of symbols ['Exch1', 'Exch2']
 def subsample_data(filename_data, filename_symbology, dir_pickle, start_date, end_date, query_attribute, query_criteria, include_avg):
     query_criteria_filename = '-'.join(query_criteria[:3])
-    pickle_name = dir_pickle+'pickle_sentiment_'+start_date+'_'+end_date+'_'+query_attribute+'_'+query_criteria_filename+'.p'
+    pickle_name = dir_pickle+'pickle_sentiment_'+start_date+'_'+end_date+'_'+query_attribute+'_'+query_criteria_filename+'_'+str(include_avg)+'.p'
     try: 
         data = pd.read_pickle(pickle_name)
         print("Loaded from pre-created pickle")
