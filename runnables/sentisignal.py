@@ -50,7 +50,7 @@ def subsample_data(filename_data, filename_symbology, dir_pickle, start_date, en
         data['DATE'] = data['DATE'].apply(lambda x: x.strftime('%x'))
         data['DATE'] = data['DATE'].apply(lambda x: pd.to_datetime(x))
         # query between start and end date
-        data = data[(data['DATE'] > start_date) & (data['DATE'] < end_date)]
+        data = data[(data['DATE'] >= start_date) & (data['DATE'] <= end_date)]
         # remove avg
         if include_avg == False:
             avg_cols = [col for col in data.columns if 'AVG' in col]
@@ -76,6 +76,7 @@ def get_data_finance(source, symbols, start_date, end_date, dir_pickle, sum_data
         # get finance data using pandas data reader
         # create df from first symbol
         try:
+            print symbols[0]
             data_finance = data.DataReader(symbols[0], source, start_date, end_date)
             # convert headers to uppercase for ease of use
             data_finance.columns = [x.upper() for x in data_finance.columns]
@@ -91,7 +92,7 @@ def get_data_finance(source, symbols, start_date, end_date, dir_pickle, sum_data
         # data_finance.reset_index(level=0, inplace=True)
         # loop through remaining symbols and either add or concatenate
         for symbol in symbols[1:]:
-            print(symbol)
+            print symbol
             try:
                 symbol_finance = data.DataReader(symbol, source, start_date, end_date)
                 # convert headers to uppercase for ease of use
@@ -143,6 +144,7 @@ def preprocess_data_sentiment(df):
     df['TOTAL_SCANNED_MESSAGES_DIFF'] = df['TOTAL_SCANNED_MESSAGES'].diff()
     # diff in total scanned messages
     df['TOTAL_SENTIMENT_MESSAGES_DIFF'] = (df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES']).diff()
+    return df
 
 #preprocess finance data with additional columns for:
 # log_return, volatility, log_volume_diff
@@ -153,18 +155,28 @@ def preprocess_data_finance(df):
     df['VOLATILITY'] = df['HIGH'] - df['LOW']
     # difference in volume
     df['LOG_VOLUME_DIFF'] = np.log(df['VOLUME'].diff())
-    # return df
+    return df
+
+# split-apply-combine
+# take sentiment and finance datasets and apply necessary
+# preprocessing per symbol
+def preprocess_per_symbol(df_s, df_f):
+    return [df_s.groupby('SYMBOL').apply(preprocess_data_sentiment), df_f.groupby('SYMBOL').apply(preprocess_data_finance)]
 
 # merge sentiment and finance data
 # usually called with F, F, T
 def merge_sentiment_finance(data_sentiment, data_finance, with_symbol, fill_finance, fill_sentiment):
     if with_symbol:
 #         return pd.merge(data_sentiment, data_finance, on=['DATE', 'SYMBOL'], how='left')
+        if fill_finance and fill_sentiment:
+            return pd.merge(data_sentiment, data_finance, on=['DATE', 'SYMBOL'], how='inner')
         if fill_finance:
             return pd.merge(data_sentiment, data_finance, on=['DATE', 'SYMBOL'], how='left')
         if fill_sentiment:
             return pd.merge(data_sentiment, data_finance, on=['DATE', 'SYMBOL'], how='right')
     else:
+        if fill_finance and fill_sentiment:
+            return pd.merge(data_sentiment, data_finance, on=['DATE'], how='inner')
         if fill_finance:
             return pd.merge(data_sentiment, data_finance, on=['DATE'], how='left')
         if fill_sentiment:
@@ -389,9 +401,23 @@ def plot_corr(df,size=10):
 
     corr = df.corr()
     fig, ax = plt.subplots(figsize=(size, size))
-    ax.matshow(corr)
-    plt.xticks(range(len(corr.columns)), corr.columns);
-    plt.yticks(range(len(corr.columns)), corr.columns);
+    cax = ax.matshow(corr, interpolation='nearest')
+    plt.xticks(range(len(corr.columns)), corr.columns, rotation=90)
+    plt.yticks(range(len(corr.columns)), corr.columns)
+    fig.colorbar(cax)
+
+    # 
+
+    # fig = plt.figure()
+    # data_nasdaq_top_100_mkt_cap_symbology_corr = data_nasdaq_top_100_mkt_cap_symbology.corr()
+    # # plt.matshow(data_nasdaq_top_100_mkt_cap_symbology_corr)
+    # # plt.colorbar(data_nasdaq_top_100_mkt_cap_symbology_corr)
+
+    # labels = data_nasdaq_top_100_mkt_cap_symbology_corr.columns
+    # # print labels
+    # ax = fig.add_subplot(111)
+    # cax = ax.matshow(data_nasdaq_top_100_mkt_cap_symbology_corr, interpolation='nearest')
+    # fig.colorbar(cax)
 
 def plot_info_surplus(results, legend):
 
