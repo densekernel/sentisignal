@@ -70,7 +70,7 @@ def subsample_data(filename_data, filename_symbology, dir_pickle, start_date, en
 #
 def get_data_finance(source, symbols, start_date, end_date, dir_pickle, sum_data_frame, sum_symbol):
     symbols_filename = '-'.join(symbols[:3])
-    pickle_name = dir_pickle+'pickle_finance_'+start_date+'_'+end_date+'_'+symbols_filename+'.p'
+    pickle_name = dir_pickle+'pickle_finance_'+source+'_'+start_date+'_'+end_date+'_'+symbols_filename+'.p'
     try: 
         data_finance = pd.read_pickle(pickle_name)
         print("Loaded from pre-created pickle")
@@ -157,7 +157,7 @@ def preprocess_data_sentiment(df):
 # log_return, volatility, log_volume_diff
 def preprocess_data_finance(df):
     # log return
-    df['LOG_RETURN'] = np.log(1 + df['ADJ CLOSE'].pct_change())
+    df['LOG_RETURN'] = np.log(1 + df['CLOSE'].pct_change())
     # volatitility
     df['VOLATILITY'] = df['HIGH'] - df['LOW']
     # difference in volume
@@ -490,6 +490,14 @@ def plot_pdf(df):
         except:
             print index, "error (probably Nan)"
 
+def plot_scatter_regression(df, x_name, y_name):
+    df.plot(kind='scatter', x=x_name, y=y_name)
+    x = df[x_name]
+    y = df[y_name]
+    idx = np.isfinite(x) & np.isfinite(y)
+    m, b = np.polyfit(x[idx], y[idx], 1)
+    plt.plot(x, m*x + b, '-')
+
 def plot_info_surplus(results, legend):
 
     axes = plt.gca()
@@ -504,6 +512,8 @@ def plot_info_surplus(results, legend):
     plt.xlabel('Time-shift of sentiment data (days) with financial data')
     plt.ylabel('Information Surplus %')
     plt.show()
+
+
 
 # sentisignal.plt.plot(a_sent_0['SHIFT'], a_sent_0['INFORMATION_SURPLUS_PCT'])
 # sentisignal.plt.plot(g_sent_0['SHIFT'], g_sent_0['INFORMATION_SURPLUS_PCT'])
