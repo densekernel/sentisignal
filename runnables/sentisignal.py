@@ -20,6 +20,7 @@ from pandas_datareader import data, wb
 from statsmodels.graphics.api import qqplot
 from operator import itemgetter
 from decimal import *
+from sklearn.neighbors.kde import KernelDensity
 
 # plt.style.use('ggplot')
 # sns.set_style("darkgrid")
@@ -369,6 +370,29 @@ def load_information_surplus(dir_pickle, symbol, start_date, end_date, time_shif
     print("Load pickle: " + pickle_name)
     return pd.read_pickle(pickle_name)
                 
+# normal pmi func
+def pmi_func(df, x, y):
+    freq_x = df.groupby(x).transform('count')
+    freq_y = df.groupby(y).transform('count')
+    freq_x_y = df.groupby([x, y]).transform('count')
+    df['pmi'] = np.log( len(df.index) *  (freq_x_y / (freq_x * freq_y)) )
+    
+# kde pmi func
+def kernel_pmi_func(df, x, y):
+    x = np.array(df[x])
+    y = np.array(df[y])
+    x_y = np.stack((x, y), axis=-1)
+    
+    kde_x = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(x[:, np.newaxis])
+    kde_y = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(y[:, np.newaxis])
+    kde_x_y = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(x_y)
+    
+    p_x = pd.Series(np.exp(kde_x.score_samples(x[:, np.newaxis])))
+    p_y = pd.Series(np.exp(kde_y.score_samples(y[:, np.newaxis])))
+    p_x_y = pd.Series(np.exp(kde_x_y.score_samples(x_y)))   
+    
+    df['pmi'] = np.log( p_x_y / (p_x * p_y) )
+
 def kmeans(df, features):
     df_num = df.select_dtypes(include=[np.float, np.int])
     # print df_num.info()
