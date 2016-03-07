@@ -8,6 +8,7 @@ import math
 import scipy.stats as s
 import statsmodels.api as sm
 import pprint
+import seaborn as sns
 
 from sklearn import metrics
 from sklearn.cluster import KMeans
@@ -20,7 +21,9 @@ from statsmodels.graphics.api import qqplot
 from operator import itemgetter
 from decimal import *
 
-plt.style.use('ggplot')
+# plt.style.use('ggplot')
+# sns.set_style("darkgrid")
+# sns.set_context("notebook")
 
 # function to subsample the large data sets for:
 # specific date range: start_data - end_date ('YYYY-MM-DD')
@@ -144,6 +147,10 @@ def preprocess_data_sentiment(df):
     df['TOTAL_SCANNED_MESSAGES_DIFF'] = df['TOTAL_SCANNED_MESSAGES'].diff()
     # diff in total scanned messages
     df['TOTAL_SENTIMENT_MESSAGES_DIFF'] = (df['BULL_SCORED_MESSAGES']+df['BEAR_SCORED_MESSAGES']).diff()
+
+    replace_nan_num_cols(df)
+    pca_cols = df.select_dtypes(include=[np.float, np.int]).columns
+    df['PCA_SENTIMENT'] = PCA(n_components=1).fit_transform(df[pca_cols])
     return df
 
 #preprocess finance data with additional columns for:
@@ -155,13 +162,38 @@ def preprocess_data_finance(df):
     df['VOLATILITY'] = df['HIGH'] - df['LOW']
     # difference in volume
     df['LOG_VOLUME_DIFF'] = np.log(df['VOLUME'].diff())
+
+    replace_nan_num_cols(df)
+    pca_cols = df.select_dtypes(include=[np.float, np.int]).columns
+    df['PCA_FINANCE'] = PCA(n_components=1).fit_transform(df[pca_cols])
+
     return df
 
-# split-apply-combine
 # take sentiment and finance datasets and apply necessary
 # preprocessing per symbol
 def preprocess_per_symbol(df_s, df_f):
     return [df_s.groupby('SYMBOL').apply(preprocess_data_sentiment), df_f.groupby('SYMBOL').apply(preprocess_data_finance)]
+
+# build map of columns with nan values
+def build_nan_col_list(df):
+    nan_col_list = []
+    for col in df.columns:
+        if df[col].isnull().values.any():
+            nan_col_list.append(col)
+
+    return nan_col_list
+
+# function to replace columns with nan valeus with 0 
+def replace_nan_num_cols(df):
+    num_cols = df.select_dtypes(include=[np.float, np.int]).columns
+    lst = [np.inf, -np.inf]
+    to_replace = dict((v, lst) for v in num_cols)
+    df.replace(to_replace, np.nan, inplace=True)
+    df.update(df[num_cols].fillna(value=0))
+
+# more generat split-apply-combine
+def split_apply_combine(df, key, func, arg_list):
+    return df.groupby(key).apply(func, arg_list)
 
 # merge sentiment and finance data
 # usually called with F, F, T
@@ -220,7 +252,7 @@ def check_pdf(df):
                 P.title(index)
                 P.show()
         except:
-            print "error" 
+            print index, "error" 
 
 # check autocorrelation
 # provide a range of graphics which diagramatically show spikes for autocorrelation 
@@ -400,11 +432,25 @@ def plot_corr(df,size=10):
         size: vertical and horizontal size of the plot'''
 
     corr = df.corr()
-    fig, ax = plt.subplots(figsize=(size, size))
-    cax = ax.matshow(corr, interpolation='nearest')
-    plt.xticks(range(len(corr.columns)), corr.columns, rotation=90)
-    plt.yticks(range(len(corr.columns)), corr.columns)
-    fig.colorbar(cax)
+    # fig, ax = plt.subplots(figsize=(size, size))
+    # cax = ax.matshow(corr, interpolation='nearest')
+    # plt.xticks(range(len(corr.columns)), corr.columns, rotation=90)
+    # plt.yticks(range(len(corr.columns)), corr.columns)
+    # fig.colorbar(cax)
+
+    # Set up the matplotlib figure
+    f, ax = plt.subplots(figsize=(size, size))
+
+    # Draw the heatmap using seaborn
+    sns.heatmap(corr, vmax=1.0, square=True)
+
+    # Use matplotlib directly to emphasize known networks
+    # networks = corrmat.columns.get_level_values("network")
+    # for i, network in enumerate(networks):
+    #     if i and network != networks[i - 1]:
+    #         ax.axhline(len(networks) - i, c="w")
+    #         ax.axvline(i, c="w")
+    # f.tight_layout()
 
     # 
 
@@ -418,6 +464,31 @@ def plot_corr(df,size=10):
     # ax = fig.add_subplot(111)
     # cax = ax.matshow(data_nasdaq_top_100_mkt_cap_symbology_corr, interpolation='nearest')
     # fig.colorbar(cax)
+
+def plot_clustermap(df):
+    # corr = df.corr()
+    # yticks = corr.index
+    
+    # sns.clustermap(corr, 'yticklabels=yticks')
+    cg=sns.clustermap(df.corr())
+    # plt.yticks(rotation=0)
+    plt.setp(cg.ax_heatmap.yaxis.get_majorticklabels(), rotation=0)    
+    # plt.show()
+
+def plot_pdf(df):
+    df_num = df.select_dtypes(include=[np.float, np.int])
+
+    # rows = df_num / 3
+
+    # f, axes = plt.subplots(3, rows + 1)
+
+    # print axes
+
+    for index in df_num.columns:
+        try:
+            sns.distplot(df_num[index], color="m")
+        except:
+            print index, "error (probably Nan)"
 
 def plot_info_surplus(results, legend):
 
