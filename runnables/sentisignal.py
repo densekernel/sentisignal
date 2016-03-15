@@ -22,8 +22,14 @@ from operator import itemgetter
 from decimal import *
 from sklearn.neighbors.kde import KernelDensity
 
+# date plot config
+
+years = mdates.YearLocator()   # every year
+months = mdates.MonthLocator()  # every month
+yearsFmt = mdates.DateFormatter('%Y')
+
 # plt.style.use('ggplot')
-# sns.set_style("darkgrid")
+sns.set_style("white")
 # sns.set_context("notebook")
 
 # function to subsample the large data sets for:
@@ -192,9 +198,10 @@ def replace_nan_num_cols(df):
     df.replace(to_replace, np.nan, inplace=True)
     df.update(df[num_cols].fillna(value=0))
 
-# more generat split-apply-combine
-def split_apply_combine(df, key, func, arg_list):
-    return df.groupby(key).apply(func, arg_list)
+# more general split-apply-combine
+def split_apply_combine(df, key, func, *args):
+    # print "args:", args
+    return df.groupby(key).apply(func, *args)
 
 # merge sentiment and finance data
 # usually called with F, F, T
@@ -308,7 +315,7 @@ def correlation_analysis(df, threshold, data_sentiment, data_finance):
 
 # Sturges formula: k = log_2 n + 1  
 def sturges_bin(df):
-    n = df.count()[1]
+    n = len(df.index)
     return math.ceil(np.log2(n)+1)
 # Rice Rule k = 2 n^{1/3}
 def rice_bin(df):
@@ -322,38 +329,112 @@ def doane_bin(data):
     std_g_1 = Decimal(6 * (n - 2)) / Decimal( (n + 1) * (n + 2) )
     std_g_1 = math.sqrt(std_g_1)
     bins = round(1 + np.log2(n) + np.log2(1+g_1/std_g_1))
+    # debug 
+    # print "n ", n, " std ", std, " g_1 ", g_1, " std_g_1 ", std_g_1, " bins "
     return bins
 
 def calc_mutual_information(x, y, bins):
-    if bins == -1:
-        bins = doane_bin(x)
-    c_xy = np.histogram2d(x, y, bins)[0]
-    mi = metrics.mutual_info_score(None, None, contingency=c_xy)
+    # print "debug x, y"
+    # print x
+    # print y
+
+    try:
+        if bins == -1:
+            bins = doane_bin(x)
+        if bins == np.inf:
+            bins = sturges_bin(x)
+    except ValueError:
+        bins = 10.0
+    # print "bins", bins
+    try:
+        c_xy = np.histogram2d(x, y, bins)[0]
+        mi = metrics.mutual_info_score(None, None, contingency=c_xy)
+        # print "success"
+    except Exception,e: 
+        # print str(e)
+        # print "error with mi calc"
+        mi = 0
     return mi
 
 def information_surplus(df, time_shift, varx, vary, bins, exante):
+    # print df.SYMBOL.unique()
+
     output = []
+
     if exante:
         shift_range = range(0, -(time_shift+1), -1)
     else:
         shift_range = range(0, time_shift+1)
+
+    # print "shift_range", shift_range, "len(df.index)", len(df.index)
+
     for i in shift_range:
+
+        if abs(i) > len(df.index):
+            # print "break"
+            break
+
         shift_x = df[varx].shift(i)
+
         if exante:
             x = shift_x.ix[1:len(shift_x.index) - 1 - abs(i)]
             y = df[vary].ix[1:len(shift_x.index) - 1 - abs(i)]
         else:
             x = shift_x.ix[1+abs(i):]
             y = df[vary].ix[1+abs(i):]
+
         mi = calc_mutual_information(x, y, bins)
+
         if i == 0:
             mi_origin = mi
-        output.append({'SHIFT': i, 'MUTUAL INFORMATION': mi, 'INFORMATION_SURPLUS_DIFF': mi - mi_origin, 'INFORMATION_SURPLUS_PCT': (mi - mi_origin) / mi_origin * 100})
+            # print "hit"
+
+        if mi_origin == 0: 
+            inf_surp_pct = 0
+        else:
+            inf_surp_pct = (mi - mi_origin) / mi_origin * 100
+
+        output.append({'SHIFT': i, 'MUTUAL_INFORMATION': mi, 'INFORMATION_SURPLUS_DIFF': mi - mi_origin, 'INFORMATION_SURPLUS_PCT': inf_surp_pct})
+
+        # print i, "output", output
+
     output_frame = pd.DataFrame(output)
     return output_frame
 
-# save mi results
+# calc net information surplus
+def net_information_surplus(df, time_shift, varx, vary, bins):
+    # calc mi for ex-ante
+    mi_res = information_surplus(df, time_shift, varx, vary, bins, True)
+    mi_res_valid = information_surplus(df, time_shift, varx, vary, bins, False)
+    # build index of 0 values
+    # mi_res['MUTUAL_INFORMATION'][mi_res['MUTUAL_INFORMATION'] <= 0] = 0
+    # mi_res_valid['INFORMATION_SURPLUS_PCT'][mi_res_valid['INFORMATION_SURPLUS_PCT'] <= 0] = 0
 
+    mi_res_net = mi_res['MUTUAL_INFORMATION'] > mi_res_valid['MUTUAL_INFORMATION']
+    # print mi_res_net.head()
+    net_pos_index = mi_res_net[mi_res_net == True].index.tolist()
+
+    zero_list = [x for x in mi_res.index.tolist() if x not in net_pos_index]
+
+    mi_res.ix[zero_list, 'INFORMATION_SURPLUS_PCT'] = 0
+    mi_res['INFORMATION_SURPLUS_PCT'][mi_res['INFORMATION_SURPLUS_PCT'] <= 0] = 0
+
+    # print net_pos_index[:10]
+    return mi_res
+
+def constrain_mi_res(df):
+    # sum_res = data_nasdaq_top_100_preprocessed_merge_df_net.groupby(level=['SYMBOL']).sum()
+    # sum_res_index = sum_res[sum_res['INFORMATION_SURPLUS_PCT'] > 0].index.tolist()
+    # df_t.iloc[df_t.index.get_level_values('SYMBOL').isin(sum_res_index)]
+
+    # sum_res = df.groupby(level=['SYMBOL']).sum()
+    # sum_res_index = sum_res[sum_res['INFORMATION_SURPLUS_PCT'] > 0].index.tolist()
+    idx = df[~(df['INFORMATION_SURPLUS_PCT'] <= 0).values].index.get_level_values('SYMBOL').unique()
+    return df.copy().loc[(idx, slice(None)),:]
+    # df_constrained = df.iloc[df.index.get_level_values('SYMBOL').isin(sum_res_index)]
+    # return mi_res_constrained
+
+# save mi results
 def save_information_surplus(dir_pickle, df, symbol, start_date, end_date, time_shift, varx, vary, bins, exante, window_size):
     if window_size > 0: 
         pickle_name = dir_pickle+'info_surp_res/'+symbol+'_'+start_date+'_'+end_date+'_'+str(window_size)+'_'+varx+'_'+vary+'_'+str(bins)+'_'+str(exante)+'.p' 
@@ -378,20 +459,107 @@ def pmi_func(df, x, y):
     df['pmi'] = np.log( len(df.index) *  (freq_x_y / (freq_x * freq_y)) )
     
 # kde pmi func
-def kernel_pmi_func(df, x, y):
+def kernel_pmi_func(df, x, y, i, b=1.0):
     x = np.array(df[x])
     y = np.array(df[y])
     x_y = np.stack((x, y), axis=-1)
     
-    kde_x = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(x[:, np.newaxis])
-    kde_y = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(y[:, np.newaxis])
-    kde_x_y = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(x_y)
+    kde_x = KernelDensity(kernel='gaussian', bandwidth=b).fit(x[:, np.newaxis])
+    kde_y = KernelDensity(kernel='gaussian', bandwidth=b).fit(y[:, np.newaxis])
+    kde_x_y = KernelDensity(kernel='gaussian', bandwidth=b).fit(x_y)
     
     p_x = pd.Series(np.exp(kde_x.score_samples(x[:, np.newaxis])))
     p_y = pd.Series(np.exp(kde_y.score_samples(y[:, np.newaxis])))
     p_x_y = pd.Series(np.exp(kde_x_y.score_samples(x_y)))   
     
-    df['pmi'] = np.log( p_x_y / (p_x * p_y) )
+    df['PMI_'+str(i)] = np.log( p_x_y / (p_x * p_y) )
+
+def daily_pmi_info_surplus(df, time_shift, varx, vary, exante, bandwidth=1.0):  
+    df_copy = df.copy()
+
+    if exante:
+        shift_range = range(0, -(time_shift+1), -1)
+    else:
+        shift_range = range(0, time_shift+1)
+
+    for i in shift_range:
+        df_copy['shift_'+varx+'_'+str(i)] = df_copy[varx].shift(i)
+        
+    if exante:
+        df_copy.drop(df.tail(time_shift).index, inplace=True)
+        df_copy.drop(df.head(time_shift).index, inplace=True)
+    else:
+        df_copy.drop(df.head(time_shift).index, inplace=True)
+        df_copy.drop(df.tail(time_shift).index, inplace=True)
+    
+    for i in shift_range:
+        kernel_pmi_func(df_copy, 'shift_'+varx+'_'+str(i), vary, i, bandwidth)
+        if i == 0:
+            df_copy['pmi_is_'+str(i)] = 0.0
+        else:
+            df_copy['pmi_is_'+str(i)] = (df_copy['PMI_'+str(i)] - df_copy['PMI_'+str(0)]) / df_copy['PMI_'+str(0)] * 100
+            # print df_copy['pmi_is_'+str(i)].values
+
+    # print df_copy.head()
+
+    return df_copy
+
+# net daily pmi info surplus
+def net_daily_pmi_info_surplus(df, time_shift, varx, vary):
+    # add results of pmi to new df
+    df_pmi_res = split_apply_combine(df, ['SYMBOL'], daily_pmi_info_surplus, time_shift, 'PCA_SENTIMENT', 'PCA_FINANCE', True)
+
+    df_pmi_res_valid = split_apply_combine(df, ['SYMBOL'], daily_pmi_info_surplus, time_shift, 'PCA_SENTIMENT', 'PCA_FINANCE', False)
+
+    df_pmi_merge = pd.merge(df_pmi_res, df_pmi_res_valid)
+
+    for i in range(1, time_shift):
+
+        pmi_res_net = df_pmi_merge['pmi_is_'+str(-i)] > df_pmi_merge['pmi_is_-'+str(i)]
+        net_pos_index = pmi_res_net[pmi_res_net == True].index.tolist()
+        zero_list = [x for x in df_pmi_merge.index.tolist() if x not in net_pos_index]
+
+        df_pmi_merge['pmi_is_-'+str(i)] = 0
+        df_pmi_merge['pmi_is_-'+str(i)][df_pmi_merge['pmi_is_-'+str(i)] <= 0] = 0
+
+        
+
+        
+
+        # df_pmi_merge.ix[zero_list, 'INFORMATION_SURPLUS_PCT'] = 0
+        # df_pmi_merge['INFORMATION_SURPLUS_PCT'][mi_res['INFORMATION_SURPLUS_PCT'] <= 0] = 0
+
+
+
+
+    return df_pmi_merge
+
+
+
+# calc net information surplus
+# def net_information_surplus(df, time_shift, varx, vary, bins):
+#     # calc mi for ex-ante
+#     mi_res = information_surplus(df, time_shift, varx, vary, bins, True)
+#     mi_res_valid = information_surplus(df, time_shift, varx, vary, bins, False)
+#     # build index of 0 values
+#     mi_res['INFORMATION_SURPLUS_PCT'][mi_res['INFORMATION_SURPLUS_PCT'] <= 0] = 0
+#     mi_res_valid['INFORMATION_SURPLUS_PCT'][mi_res_valid['INFORMATION_SURPLUS_PCT'] <= 0] = 0
+
+#     mi_res_net = mi_res > mi_res_valid
+#     net_pos_index = mi_res_net[mi_res_net['INFORMATION_SURPLUS_PCT'] == True].index.tolist()
+
+#     zero_list = [x for x in mi_res.index.tolist() if x not in net_pos_index]
+
+#     mi_res.ix[zero_list, 'INFORMATION_SURPLUS_PCT'] = 0
+
+#     # print net_pos_index[:10]
+#     return mi_res
+
+# def constrain_mi_res(df):
+    # idx = df[~(df['INFORMATION_SURPLUS_PCT'] <= 0).values].index.get_level_values('SYMBOL').unique()
+    # return df.copy().loc[(idx, slice(None)),:]
+    # # return mi_res_constrained
+
 
 def kmeans(df, features):
     df_num = df.select_dtypes(include=[np.float, np.int])
@@ -537,10 +705,19 @@ def plot_info_surplus(results, legend):
     plt.ylabel('Information Surplus %')
     plt.show()
 
+def plot_inf_res(df):
+    # figsize=(15, 5)
+    ax = df.unstack(0).plot(x='SHIFT', y='INFORMATION_SURPLUS_PCT', legend=df.index.levels)
+    # plt.legend(legend, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    ax.set_xlabel('Time-shift of sentiment data (days) with financial data')
+    ax.set_ylabel('Information Surplus %')
 
 
-# sentisignal.plt.plot(a_sent_0['SHIFT'], a_sent_0['INFORMATION_SURPLUS_PCT'])
-# sentisignal.plt.plot(g_sent_0['SHIFT'], g_sent_0['INFORMATION_SURPLUS_PCT'])
+
+# getting min and max from info surplus
+
+# plt.plot(a_sent_0['SHIFT'], a_sent_0['INFORMATION_SURPLUS_PCT'])
+# plt.plot(g_sent_0['SHIFT'], g_sent_0['INFORMATION_SURPLUS_PCT'])
 
 
 # ymin = min(a_sent_0['INFORMATION_SURPLUS_PCT'].min(), g_sent_0['INFORMATION_SURPLUS_PCT'].min())
