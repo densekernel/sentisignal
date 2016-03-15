@@ -324,19 +324,21 @@ def rice_bin(df):
 # Doanes formula for non-normal data.
 def doane_bin(data):
     n = data.count()
-    std = np.std(data)
-    g_1 = abs( s.moment(data,3) / s.moment(data, 2))
-    std_g_1 = Decimal(6 * (n - 2)) / Decimal( (n + 1) * (n + 2) )
-    std_g_1 = math.sqrt(std_g_1)
-    bins = round(1 + np.log2(n) + np.log2(1+g_1/std_g_1))
+    print "doane", n
+    if n == 0 or n == 1:
+        return 1
+    else:
+        std = np.std(data)
+        g_1 = abs( s.moment(data,3) / s.moment(data, 2))
+        std_g_1 = Decimal(6 * (n - 2)) / Decimal( (n + 1) * (n + 2) )
+        std_g_1 = math.sqrt(std_g_1)
+        bins = round(1 + np.log2(n) + np.log2(1+g_1/std_g_1))
     # debug 
     # print "n ", n, " std ", std, " g_1 ", g_1, " std_g_1 ", std_g_1, " bins "
     return bins
 
 def calc_mutual_information(x, y, bins):
-    # print "debug x, y"
-    # print x
-    # print y
+    # print "len(x)", len(x)
 
     try:
         if bins == -1:
@@ -349,15 +351,14 @@ def calc_mutual_information(x, y, bins):
     try:
         c_xy = np.histogram2d(x, y, bins)[0]
         mi = metrics.mutual_info_score(None, None, contingency=c_xy)
-        # print "success"
+        print "success"
     except Exception,e: 
-        # print str(e)
-        # print "error with mi calc"
+        print "error with mi calc", str(e)
         mi = 0
     return mi
 
 def information_surplus(df, time_shift, varx, vary, bins, exante):
-    # print df.SYMBOL.unique()
+    print df.SYMBOL.unique(), "exante ", exante
 
     output = []
 
@@ -366,20 +367,24 @@ def information_surplus(df, time_shift, varx, vary, bins, exante):
     else:
         shift_range = range(0, time_shift+1)
 
-    # print "shift_range", shift_range, "len(df.index)", len(df.index)
+    # print "len(df.index)", len(df.index)
 
     for i in shift_range:
-
         if abs(i) > len(df.index):
-            # print "break"
             break
 
         shift_x = df[varx].shift(i)
+        # print "shift_x length", len(shift_x)
+
+        mi = 0.0
 
         if exante:
-            x = shift_x.ix[1:len(shift_x.index) - 1 - abs(i)]
-            y = df[vary].ix[1:len(shift_x.index) - 1 - abs(i)]
+            end_index = (len(shift_x.index) - 1 - abs(i))
+            x = shift_x[1:end_index]
+            y = df[vary][1:end_index]
+            # print "len(x.index)", len(x.index), "len(x)", len(x), "end_index", end_index
         else:
+            # print "exec"
             x = shift_x.ix[1+abs(i):]
             y = df[vary].ix[1+abs(i):]
 
@@ -387,7 +392,6 @@ def information_surplus(df, time_shift, varx, vary, bins, exante):
 
         if i == 0:
             mi_origin = mi
-            # print "hit"
 
         if mi_origin == 0: 
             inf_surp_pct = 0
@@ -395,8 +399,6 @@ def information_surplus(df, time_shift, varx, vary, bins, exante):
             inf_surp_pct = (mi - mi_origin) / mi_origin * 100
 
         output.append({'SHIFT': i, 'MUTUAL_INFORMATION': mi, 'INFORMATION_SURPLUS_DIFF': mi - mi_origin, 'INFORMATION_SURPLUS_PCT': inf_surp_pct})
-
-        # print i, "output", output
 
     output_frame = pd.DataFrame(output)
     return output_frame
