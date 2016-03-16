@@ -82,7 +82,7 @@ def get_data_finance(source, symbols, start_date, end_date, dir_pickle, sum_data
         data_finance = pd.read_pickle(pickle_name)
         print("Loaded from pre-created pickle")
     except:
-        print("Scraping and saving data from "+source)
+        # print("Scraping and saving data from "+source)
         # get finance data using pandas data reader
         # create df from first symbol
         try:
@@ -324,7 +324,7 @@ def rice_bin(df):
 # Doanes formula for non-normal data.
 def doane_bin(data):
     n = data.count()
-    print "doane", n
+    # print "doane", n
     if n == 0 or n == 1:
         return 1
     else:
@@ -340,6 +340,9 @@ def doane_bin(data):
 def calc_mutual_information(x, y, bins):
     # print "len(x)", len(x)
 
+    # print "x NaN", x[x == np.nan]
+    # print "y NaN", y[y == np.nan]
+
     try:
         if bins == -1:
             bins = doane_bin(x)
@@ -351,14 +354,14 @@ def calc_mutual_information(x, y, bins):
     try:
         c_xy = np.histogram2d(x, y, bins)[0]
         mi = metrics.mutual_info_score(None, None, contingency=c_xy)
-        print "success"
+        # print "success"
     except Exception,e: 
         print "error with mi calc", str(e)
         mi = 0
     return mi
 
 def information_surplus(df, time_shift, varx, vary, bins, exante):
-    print df.SYMBOL.unique(), "exante ", exante
+    # print df.SYMBOL.unique(), "exante ", exante
 
     output = []
 
@@ -385,8 +388,8 @@ def information_surplus(df, time_shift, varx, vary, bins, exante):
             # print "len(x.index)", len(x.index), "len(x)", len(x), "end_index", end_index
         else:
             # print "exec"
-            x = shift_x.ix[1+abs(i):]
-            y = df[vary].ix[1+abs(i):]
+            x = shift_x[1+abs(i):]
+            y = df[vary][1+abs(i):]
 
         mi = calc_mutual_information(x, y, bins)
 
@@ -425,16 +428,8 @@ def net_information_surplus(df, time_shift, varx, vary, bins):
     return mi_res
 
 def constrain_mi_res(df):
-    # sum_res = data_nasdaq_top_100_preprocessed_merge_df_net.groupby(level=['SYMBOL']).sum()
-    # sum_res_index = sum_res[sum_res['INFORMATION_SURPLUS_PCT'] > 0].index.tolist()
-    # df_t.iloc[df_t.index.get_level_values('SYMBOL').isin(sum_res_index)]
-
-    # sum_res = df.groupby(level=['SYMBOL']).sum()
-    # sum_res_index = sum_res[sum_res['INFORMATION_SURPLUS_PCT'] > 0].index.tolist()
     idx = df[~(df['INFORMATION_SURPLUS_PCT'] <= 0).values].index.get_level_values('SYMBOL').unique()
     return df.copy().loc[(idx, slice(None)),:]
-    # df_constrained = df.iloc[df.index.get_level_values('SYMBOL').isin(sum_res_index)]
-    # return mi_res_constrained
 
 # save mi results
 def save_information_surplus(dir_pickle, df, symbol, start_date, end_date, time_shift, varx, vary, bins, exante, window_size):
@@ -707,12 +702,33 @@ def plot_info_surplus(results, legend):
     plt.ylabel('Information Surplus %')
     plt.show()
 
-def plot_inf_res(df):
+def plot_inf_res(df, symbols=[]):
+
+    if len(symbols) > 0:
+        df = df.loc[symbols]
     # figsize=(15, 5)
     ax = df.unstack(0).plot(x='SHIFT', y='INFORMATION_SURPLUS_PCT', legend=df.index.levels)
     # plt.legend(legend, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     ax.set_xlabel('Time-shift of sentiment data (days) with financial data')
     ax.set_ylabel('Information Surplus %')
+
+def plot_lead_trail_res(df_ante, df_post, symbols=[]):
+
+    if len(symbols) < 1:
+        print "Try again with a symbol list. (Time constraints)"
+    else:
+        df_ante = df_ante.loc[symbols]
+        df_post = df_post.loc[symbols]
+
+        df_ante.index.set_levels([[str(x)+'_ex-ante' for x in df_ante.index.levels[0]],df_ante.index.levels[1]], inplace=True)
+        df_post.index.set_levels([[str(x)+'_ex-post' for x in df_post.index.levels[0]],df_post.index.levels[1]], inplace=True)
+
+        df_merge = pd.concat([df_ante, df_post])
+        df_merge['SHIFT'] = abs(df_merge['SHIFT'])
+
+        # print df_merge.index.levels[0].values
+
+        df_merge.unstack(0).plot(x='SHIFT', y='MUTUAL_INFORMATION', legend=[df_merge.index.levels[0].values])
 
 
 
