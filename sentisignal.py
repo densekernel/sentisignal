@@ -168,18 +168,27 @@ def preprocess_data_sentiment(df):
 #preprocess finance data with additional columns for:
 # log_return, volatility, log_volume_diff
 def preprocess_data_finance(df):
-    # log return
+    # log variables 
     df['LOG_RETURN'] = np.log(1 + df['CLOSE'].pct_change())
-    # volatitility
-    df['VOLATILITY'] = df['HIGH'] - df['LOW']
-    df['LOG_VOLATILITY_DIFF'] = np.log(df['VOLATILITY'].diff())
+    df['LOG_CLOSE'] = np.log(1 + df['CLOSE'])
+    df['LOG_HIGH'] = np.log(1 + df['HIGH'])
+    df['LOG_LOW'] = np.log(1 + df['LOW'])
+    
+    # volatitility - True Range
+    df['VOLATILITY_1'] = abs(df['LOG_HIGH'] - df['LOG_LOW'])
+    df['VOLATILITY_2'] = abs(df['LOG_HIGH'] - df['LOG_CLOSE'].shift()) #PREVIOUS CLOSE
+    df['VOLATILITY_3'] = abs(df['LOG_LOW'] - df['LOG_CLOSE'].shift()) #PREVIOUS CLOSE
+    df['TR'] = df[['VOLATILITY_1', 'VOLATILITY_2', 'VOLATILITY_3']].max(axis=1)
+    df['LOG_TR_DIFF'] = np.log(df['TR'].diff())
+    
     # difference in volume
     df['LOG_VOLUME_DIFF'] = np.log(df['VOLUME'].diff())
-
+    
+    # PCA features
     replace_nan_num_cols(df)
     pca_cols = df.select_dtypes(include=[np.float, np.int]).columns
     df['PCA_FINANCE'] = PCA(n_components=1).fit_transform(df[pca_cols])
-    df['PCA_FINANCE_CHANGE'] = PCA(n_components=1).fit_transform(df[['LOG_RETURN', 'LOG_VOLATILITY_DIFF', 'LOG_VOLUME_DIFF']])
+    df['PCA_FINANCE_CHANGE'] = PCA(n_components=1).fit_transform(df[['LOG_RETURN', 'LOG_TR_DIFF', 'LOG_VOLUME_DIFF']])
 
     return df
 
