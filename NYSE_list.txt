@@ -1,0 +1,99 @@
+\begin{longtable}{rlp{2cm}p{1.2cm}p{2cm}p{1cm}{1cm}}
+\caption{NYSE Significant Leading Companies}
+  \hline
+ & Symbol & Max\_Surplus & Max\_Lag & Avg\_Surplus & Count & Sector \\ 
+  \hline
+1 & ABB & 52.00 &  -4 & 20.95 &   8 & Consumer Durables \\ 
+  2 & ABEV & 0.71 &  -1 & 0.07 &   1 & Consumer Non-Durables \\ 
+  3 & ABT & 161.83 & -10 & 29.49 &   4 & Health Care \\ 
+  4 & ADM & 36.02 & -10 & 3.60 &   1 & Consumer Non-Durables \\ 
+  5 & AEP & 44.91 &  -1 & 5.31 &   2 & Public Utilities \\ 
+  6 & AFL & 17.21 &  -1 & 1.72 &   1 & Finance \\ 
+  7 & AGN & 17.41 &  -6 & 2.11 &   2 & Health Care \\ 
+  8 & ALL & 13.99 &  -1 & 2.37 &   2 & Finance \\ 
+  9 & AON & 1.84 &  -1 & 0.18 &   1 & Finance \\ 
+  10 & APC & 3.40 &  -5 & 0.34 &   1 & Energy \\ 
+  11 & APD & 5.80 &  -1 & 0.58 &   1 & Basic Industries \\ 
+  12 & AVB & 4.89 &  -4 & 1.09 &   3 & Consumer Services \\ 
+  13 & BA & 13.08 &  -7 & 1.85 &   2 & Capital Goods \\ 
+  14 & BAC & 8.54 &  -1 & 0.85 &   1 & Finance \\ 
+  15 & BAM & 3.24 &  -8 & 0.32 &   1 & Consumer Services \\ 
+  16 & BAX & 27.76 &  -1 & 2.78 &   1 & Health Care \\ 
+  17 & BBD & 3.07 &  -5 & 0.31 &   1 & Finance \\ 
+  18 & BBT & 12.70 &  -1 & 1.27 &   1 & Finance \\ 
+  19 & BBVA & 0.90 &  -6 & 0.09 &   1 & Finance \\ 
+  20 & BMO & 6.82 &  -8 & 0.83 &   2 & Finance \\ 
+  21 & BNS & 20.90 &  -6 & 2.09 &   1 & Finance \\ 
+  22 & BSBR & 8.60 &  -1 & 0.86 &   1 & Finance \\ 
+  23 & BT & 27.21 &  -1 & 2.88 &   2 & Public Utilities \\ 
+  24 & CAJ & 16.87 &  -1 & 1.69 &   1 & Miscellaneous \\ 
+  25 & CAT & 139.16 &  -6 & 41.02 &   6 & Capital Goods \\ 
+  26 & CHA & 45.38 &  -1 & 20.53 &   5 & Public Utilities \\ 
+  27 & COP & 1.84 &  -7 & 0.18 &   1 & Energy \\ 
+  28 & CRH & 11.57 &  -8 & 1.16 &   1 & Capital Goods \\ 
+  29 & CS & 10.87 &  -8 & 1.24 &   2 & Finance \\ 
+  30 & CUK & 2.56 &  -3 & 0.26 &   1 & Consumer Services \\ 
+  31 & DAL & 9.74 & -10 & 3.21 &   4 & Transportation \\ 
+  32 & DCM & 8.48 &  -6 & 0.87 &   2 & Technology \\ 
+  33 & DHR & 2.81 &  -1 & 0.28 &   1 & Capital Goods \\ 
+  34 & DIS & 19.97 &  -4 & 2.47 &   3 & Consumer Services \\ 
+  35 & DOW & 267.29 &  -6 & 87.33 &  10 & Basic Industries \\ 
+  36 & DUK & 7.83 &  -1 & 0.78 &   1 & Public Utilities \\ 
+  37 & EMR & 17.66 &  -7 & 6.15 &   7 & Energy \\ 
+  38 & EOG & 33.09 &  -9 & 5.21 &   3 & Energy \\ 
+  39 & EPD & 16.03 &  -4 & 4.25 &   4 & Public Utilities \\ 
+  40 & FMX & 37.36 &  -7 & 4.34 &   2 & Consumer Non-Durables \\ 
+  41 & GGP & 17.05 & -10 & 2.10 &   2 & Consumer Services \\ 
+  42 & HMC & 3.52 &  -2 & 0.35 &   1 & Capital Goods \\ 
+  43 & HPE & 44.37 &  -7 & 8.20 &   3 & Technology \\ 
+  44 & HPQ & 0.30 &  -1 & 0.03 &   1 & Technology \\ 
+  45 & HUM & 76.89 &  -7 & 39.40 &   8 & Health Care \\ 
+  46 & IBM & 26.29 & -10 & 7.16 &   4 & Technology \\ 
+  47 & ING & 11.96 &  -8 & 2.73 &   3 & Finance \\ 
+  48 & JNJ & 12.29 &  -1 & 1.23 &   1 & Health Care \\ 
+  49 & JPM & 2.67 &  -1 & 0.27 &   1 & Finance \\ 
+  50 & KEP & 48.05 &  -9 & 11.22 &   6 & Public Utilities \\ 
+  51 & KO & 2.83 &  -1 & 0.28 &   1 & Consumer Non-Durables \\ 
+  52 & LFC & 10.22 &  -5 & 2.19 &   4 & Finance \\ 
+  53 & LYG & 11.33 &  -1 & 1.13 &   1 & Finance \\ 
+  54 & MFC & 0.03 &  -1 & 0.00 &   1 & Finance \\ 
+  55 & MFG & 4.11 &  -2 & 0.41 &   1 & Finance \\ 
+  56 & MMC & 22.17 &  -3 & 4.05 &   4 & Finance \\ 
+  57 & MMM & 5.85 &  -1 & 0.59 &   1 & Health Care \\ 
+  58 & MS & 7.49 &  -1 & 0.75 &   1 & Finance \\ 
+  59 & MTU & 35.42 &  -2 & 8.86 &   6 & Finance \\ 
+  60 & ORAN & 28.61 & -10 & 11.02 &   7 & Public Utilities \\ 
+  61 & PCG & 9.17 & -10 & 0.92 &   1 & Public Utilities \\ 
+  62 & PLD & 1.27 &  -9 & 0.13 &   1 & Consumer Services \\ 
+  63 & PPG & 26.29 &  -5 & 3.91 &   2 & Basic Industries \\ 
+  64 & PRU & 13.98 &  -5 & 4.81 &   5 & Finance \\ 
+  65 & PSA & 16.23 &  -8 & 3.22 &   4 & Consumer Services \\ 
+  66 & PTR & 17.52 &  -8 & 3.13 &   2 & Energy \\ 
+  67 & PUK & 37.53 &  -7 & 12.24 &   5 & Finance \\ 
+  68 & RAI & 0.71 &  -1 & 0.07 &   1 & Consumer Non-Durables \\ 
+  69 & RIO & 7.35 &  -9 & 0.74 &   1 & Basic Industries \\ 
+  70 & RTN & 15.74 &  -1 & 1.57 &   1 & Capital Goods \\ 
+  71 & SAN & 47.81 & -10 & 13.18 &   5 & Finance \\ 
+  72 & SMFG & 124.01 &  -3 & 44.31 &   6 & Finance \\ 
+  73 & SNY & 25.29 &  -9 & 5.69 &   4 & Health Care \\ 
+  74 & SRE & 49.66 &  -6 & 20.94 &   7 & Public Utilities \\ 
+  75 & T & 13.15 &  -1 & 1.31 &   1 & Public Utilities \\ 
+  76 & TD & 6.17 &  -1 & 0.62 &   1 & Finance \\ 
+  77 & TEF & 12.43 &  -3 & 1.51 &   2 & Public Utilities \\ 
+  78 & TJX & 4.62 &  -1 & 0.46 &   1 & Consumer Services \\ 
+  79 & TLK & 28.79 &  -8 & 5.21 &   2 & Public Utilities \\ 
+  80 & TM & 28.68 & -10 & 4.72 &   3 & Capital Goods \\ 
+  81 & TOT & 9.79 & -10 & 0.98 &   1 & Energy \\ 
+  82 & TRP & 5.26 &  -1 & 0.53 &   1 & Public Utilities \\ 
+  83 & TRV & 54.89 &  -5 & 7.85 &   2 & Finance \\ 
+  84 & TWX & 3.11 &  -1 & 0.31 &   1 & Consumer Services \\ 
+  85 & UBS & 31.27 &  -1 & 4.70 &   3 & Finance \\ 
+  86 & UN & 12.38 &  -8 & 1.96 &   2 & Basic Industries \\ 
+  87 & VIV & 7.40 &  -9 & 0.84 &   2 & Public Utilities \\ 
+  88 & VMW & 10.31 &  -1 & 1.03 &   1 & Technology \\ 
+  89 & VTR & 12.66 &  -9 & 2.66 &   3 & Consumer Services \\ 
+  90 & WBK & 37.99 & -10 & 8.98 &   4 & Finance \\ 
+  91 & WMT & 5.26 &  -1 & 0.53 &   1 & Consumer Services \\ 
+   \hline
+\hline
+\end{longtable}

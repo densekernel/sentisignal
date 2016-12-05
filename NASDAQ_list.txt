@@ -1,0 +1,109 @@
+\begin{longtable}{rlp{2cm}p{1.2cm}p{2cm}p{1cm}{1cm}}
+\caption{NASDAQ Significant Leading Companies}
+  \hline
+ & Symbol & Max\_Surplus & Max\_Lag & Avg\_Surplus & Count & Sector \\ 
+  \hline
+1 & AAL & 5.98 &  -7 & 0.60 &   1 & Transportation \\ 
+  2 & ACGL & 16.46 & -10 & 5.86 &   6 & Finance \\ 
+  3 & ACWI & 76.02 & -10 & 8.78 &   2 & n/a \\ 
+  4 & ADBE & 23.44 &  -1 & 2.34 &   1 & Technology \\ 
+  5 & AFSI & 0.36 &  -1 & 0.04 &   1 & Finance \\ 
+  6 & AKAM & 15.02 &  -1 & 1.50 &   1 & Miscellaneous \\ 
+  7 & ANSS & 2.54 &  -1 & 0.25 &   1 & Technology \\ 
+  8 & ASML & 20.80 &  -1 & 2.08 &   1 & Technology \\ 
+  9 & BBBY & 30.15 &  -1 & 3.01 &   1 & Consumer Services \\ 
+  10 & BUFF & 8.83 &  -3 & 0.88 &   1 & Consumer Non-Durables \\ 
+  11 & CA & 149.77 &  -7 & 44.00 &   7 & Technology \\ 
+  12 & CASY & 9.28 &  -1 & 0.93 &   1 & Consumer Durables \\ 
+  13 & CDNS & 2.66 & -10 & 0.34 &   2 & Technology \\ 
+  14 & CG & 17.93 &  -2 & 4.07 &   3 & Finance \\ 
+  15 & CINF & 22.04 &  -7 & 3.01 &   2 & Finance \\ 
+  16 & CMCSA & 6.33 &  -1 & 0.63 &   1 & Consumer Services \\ 
+  17 & CME & 16.55 &  -1 & 1.65 &   1 & Finance \\ 
+  18 & COST & 16.93 &  -4 & 2.84 &   3 & Consumer Services \\ 
+  19 & CSAL & 21.08 & -10 & 2.14 &   2 & Consumer Services \\ 
+  20 & CSGP & 22.04 &  -1 & 3.57 &   4 & Miscellaneous \\ 
+  21 & CTAS & 28.09 &  -1 & 3.81 &   2 & Consumer Non-Durables \\ 
+  22 & CTXS & 2.61 &  -1 & 0.26 &   1 & Technology \\ 
+  23 & DISCB & 9.46 &  -3 & 1.17 &   2 & Consumer Services \\ 
+  24 & DISCK & 0.72 &  -2 & 0.07 &   1 & Consumer Services \\ 
+  25 & DOX & 52.25 &  -7 & 9.85 &   5 & Technology \\ 
+  26 & EA & 16.98 &  -1 & 1.70 &   1 & Technology \\ 
+  27 & ERIE & 3.85 &  -9 & 0.38 &   1 & Finance \\ 
+  28 & EWBC & 34.58 &  -3 & 12.88 &   6 & Finance \\ 
+  29 & FANG & 3.40 &  -8 & 0.59 &   2 & Energy \\ 
+  30 & FB & 18.25 &  -1 & 1.82 &   1 & Technology \\ 
+  31 & FFIV & 22.07 &  -1 & 2.21 &   1 & Technology \\ 
+  32 & FISV & 4.59 & -10 & 0.46 &   1 & Technology \\ 
+  33 & FITB & 26.25 &  -6 & 5.68 &   3 & Finance \\ 
+  34 & FOXA & 13.71 &  -1 & 1.37 &   1 & Consumer Services \\ 
+  35 & FTNT & 20.34 &  -1 & 2.03 &   1 & Technology \\ 
+  36 & GLPI & 5.94 &  -8 & 1.51 &   3 & Consumer Services \\ 
+  37 & GNTX & 1.81 &  -1 & 0.18 &   1 & Capital Goods \\ 
+  38 & HAS & 30.73 &  -7 & 14.56 &   6 & Consumer Non-Durables \\ 
+  39 & HDS & 11.63 &  -1 & 1.33 &   2 & Consumer Services \\ 
+  40 & HOLX & 1.81 &  -1 & 0.18 &   1 & Health Care \\ 
+  41 & HSIC & 20.18 &  -1 & 3.47 &   2 & Health Care \\ 
+  42 & IBKR & 2.55 &  -1 & 0.26 &   1 & Finance \\ 
+  43 & INFO & 108.15 &  -7 & 32.00 &   4 & Technology \\ 
+  44 & INTU & 4.26 &  -5 & 1.01 &   4 & Technology \\ 
+  45 & JBHT & 12.73 &  -1 & 1.27 &   1 & Transportation \\ 
+  46 & JD & 38.70 &  -5 & 12.18 &   6 & Consumer Services \\ 
+  47 & JKHY & 20.47 &  -8 & 4.89 &   6 & Technology \\ 
+  48 & KLAC & 5.28 &  -1 & 0.53 &   1 & Capital Goods \\ 
+  49 & LBRDA & 14.82 &  -1 & 1.57 &   2 & Consumer Services \\ 
+  50 & LBTYA & 8.17 &  -1 & 0.82 &   1 & Consumer Services \\ 
+  51 & LBTYB & 40.41 &  -7 & 12.91 &   7 & Consumer Services \\ 
+  52 & LBTYK & 19.43 &  -7 & 3.04 &   2 & Consumer Services \\ 
+  53 & LILA & 35.42 & -10 & 3.54 &   1 & Consumer Services \\ 
+  54 & LILAK & 39.67 &  -7 & 8.16 &   3 & Consumer Services \\ 
+  55 & LVNTA & 26.84 &  -1 & 4.91 &   4 & Consumer Services \\ 
+  56 & MAR & 27.35 &  -7 & 5.02 &   2 & Consumer Services \\ 
+  57 & MIDD & 11.30 &  -1 & 1.50 &   2 & Technology \\ 
+  58 & MNST & 13.12 &  -2 & 1.31 &   1 & Consumer Non-Durables \\ 
+  59 & MSCC & 25.80 &  -7 & 5.98 &   5 & Technology \\ 
+  60 & NTAP & 26.26 &  -1 & 2.63 &   1 & Technology \\ 
+  61 & NTRS & 11.51 &  -1 & 1.15 &   1 & Finance \\ 
+  62 & NWS & 44.64 &  -4 & 11.26 &   5 & Consumer Services \\ 
+  63 & NWSA & 3.65 &  -1 & 0.36 &   1 & Consumer Services \\ 
+  64 & ON & 24.65 &  -2 & 4.50 &   2 & Technology \\ 
+  65 & ORLY & 21.53 &  -1 & 2.15 &   1 & Consumer Services \\ 
+  66 & PACW & 4.40 &  -8 & 0.44 &   1 & Finance \\ 
+  67 & PAYX & 21.76 &  -1 & 2.18 &   1 & Consumer Services \\ 
+  68 & PBCT & 17.27 &  -4 & 3.10 &   3 & Finance \\ 
+  69 & PDCO & 34.06 &  -1 & 3.93 &   2 & Health Care \\ 
+  70 & PPC & 48.37 &  -5 & 18.08 &   5 & Consumer Non-Durables \\ 
+  71 & PYPL & 0.15 &  -9 & 0.01 &   1 & Miscellaneous \\ 
+  72 & QCOM & 21.89 &  -1 & 2.19 &   1 & Technology \\ 
+  73 & QGEN & 38.94 &  -1 & 7.80 &   3 & Health Care \\ 
+  74 & QVCA & 17.89 &  -4 & 6.90 &   5 & Consumer Services \\ 
+  75 & RYAAY & 4.68 &  -6 & 0.55 &   2 & Transportation \\ 
+  76 & SABR & 35.74 &  -1 & 3.57 &   1 & Technology \\ 
+  77 & SBAC & 17.38 &  -1 & 3.00 &   2 & Consumer Services \\ 
+  78 & SCZ & 42.50 &  -7 & 8.77 &   5 & n/a \\ 
+  79 & SIVB & 30.48 &  -6 & 7.09 &   4 & Finance \\ 
+  80 & SNH & 41.11 &  -5 & 4.50 &   2 & Consumer Services \\ 
+  81 & SNPS & 13.11 &  -1 & 1.31 &   1 & Technology \\ 
+  82 & SSNC & 18.27 &  -1 & 2.93 &   3 & Technology \\ 
+  83 & STLD & 11.49 &  -6 & 1.15 &   1 & Basic Industries \\ 
+  84 & SYMC & 1.92 &  -1 & 0.19 &   1 & Technology \\ 
+  85 & TEAM & 219.09 & -10 & 76.32 &   4 & Technology \\ 
+  86 & TFSL & 2.09 &  -1 & 0.21 &   1 & Finance \\ 
+  87 & TROW & 2.61 &  -8 & 0.52 &   3 & Finance \\ 
+  88 & TSCO & 0.26 &  -1 & 0.03 &   1 & Consumer Services \\ 
+  89 & UHAL & 17.33 &  -9 & 1.73 &   1 & Consumer Services \\ 
+  90 & ULTI & 24.29 &  -1 & 3.35 &   3 & Technology \\ 
+  91 & VCIT & 69.82 &  -8 & 13.20 &   4 & n/a \\ 
+  92 & VIP & 9.70 &  -4 & 0.97 &   1 & Public Utilities \\ 
+  93 & VRSK & 7.91 &  -6 & 0.79 &   1 & Technology \\ 
+  94 & VRSN & 13.25 &  -1 & 1.32 &   1 & Technology \\ 
+  95 & VXUS & 11.17 &  -2 & 1.71 &   3 & n/a \\ 
+  96 & WDC & 5.33 &  -1 & 0.53 &   1 & Technology \\ 
+  97 & WFM & 53.08 &  -1 & 5.31 &   1 & Consumer Services \\ 
+  98 & WOOF & 5.13 &  -8 & 0.54 &   2 & Consumer Non-Durables \\ 
+  99 & Z & 43.88 &  -1 & 17.12 &   9 & Miscellaneous \\ 
+  100 & ZG & 85.96 &  -9 & 18.36 &   4 & Miscellaneous \\ 
+  101 & ZION & 31.92 &  -1 & 3.66 &   3 & Finance \\ 
+   \hline
+\hline
+\end{longtable}
